@@ -4,21 +4,25 @@
       
       <!-- [Search]  -->
 
-      <div class="container mt-4 mb-4">
-         <input type="text" v-model="search" id="" class="form-control" placeholder="search country's name">
+      <div class="container pt-3 pb-3">
+         <h2 class="text-center"><strong>Techbodia's Assignment</strong></h2>
+      </div>
+
+      <div class="container mt-4 mb-4 d-flex justify-content-between">
+         <input type="text" v-model="search" id="" class="form-control w-75" placeholder="search countries's name">
+         <p><strong>Countries : </strong>{{ ListCountry.length }}</p>
       </div>
 
       <!-- [Search]  -->
 
       <!-- <div class="container">
-        <pagination v-model="page" :records="300" :per-page="25" @paginate="getListCountry()"/>
+        <pagination v-model="page" :records="300" :per-page="25" @paginate=""/>
       </div> -->
 
       <!-- [Sort]  -->
    
       <div class="container">
-        <button class="btn btn-dark" @click="sortBy1('cca2')">Sort ( A-Z )</button> &nbsp;&nbsp;
-        <button class="btn btn-dark" @click="sortBy2('cca2')">Sort ( Z-A )</button>
+        <button class="btn btn-dark" @click="toggleSortOrder">{{ sortOrderButtonText }}</button>
       </div>
 
       <!-- [Sort]  -->
@@ -27,13 +31,14 @@
 
       <div class="container">
            <div class="row">
-              <div class="col-xl-3 col-md-6 col-sm-12" v-for="country in filteredList">
+              <div class="col-xl-3 col-md-6 col-sm-12" v-for="country in sortedItems">
                   <div class="box-card">
                         <div class="box-img">
                             <img :src=country.flags.png alt="...">
                         </div>
                         <div class="box-description">
                           <div class="box-title text-center">
+                            
                             <h5  @click="DetailMore(country)" data-bs-toggle="modal" data-bs-target="#exampleModal"
                               style="width: 200px; 
                               height: 42px; 
@@ -61,9 +66,6 @@
                             >
                             <b>idd : </b>{{ country.idd }}</p>
 
-                            <div class="box-btn">
-                              <button class="btn btn-warning" @click="DetailMore(country)" data-bs-toggle="modal" data-bs-target="#exampleModal" >Detail more</button>
-                          </div>
                       </div>
                   </div>
                </div>
@@ -83,11 +85,27 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
+                <h2 class="text-center">{{ name }}</h2>
                 <p><b>cca2 : </b>{{ itemDetail.cca2 }}</p>
                 <p><b>cca3 : </b>{{ itemDetail.cca3 }}</p>
-                <p><b>altSpellings  : </b>{{ itemDetail.altSpellings  }}</p>
-                <p><b>idd   : </b>{{ itemDetail.idd   }}</p>
-                <img :src="img_Detail" alt="">
+                <p 
+                    style="width: 400px; 
+                    height: 42px; 
+                    overflow: hidden; 
+                    text-overflow: ellipsis; 
+                    white-space: nowrap;"
+                    >
+                
+                <b>altSpellings  : </b>{{ itemDetail.altSpellings  }}</p>
+                <p 
+                    style="width: 400px; 
+                    height: 42px; 
+                    overflow: hidden; 
+                    text-overflow: ellipsis; 
+                    white-space: nowrap;"
+                    >
+                <b>idd   : </b>{{ itemDetail.idd   }}</p>
+                <img :src="img_Detail" class="img-detail" alt="">
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
@@ -129,7 +147,7 @@ export default {
          itemDetail:[],
          img_Detail: false,
          name:false,
-         page: 1
+         sortOrder: "asc"
     };
    },
    computed: {
@@ -138,6 +156,25 @@ export default {
         return country.name.official.toLowerCase().includes(this.search.toLowerCase())
       })
     },
+    sortedItems() {
+          let sortedArray = [...this.filteredList];
+          sortedArray.sort((x, y) => {
+            let comparison = 0;
+            if (x.name.official < y.name.official) {
+              comparison = -1;
+            } else if (x.name.official > y.name.official) {
+              comparison = 1;
+            }
+            return comparison;
+          });
+          if (this.sortOrder === "desc") {
+            sortedArray.reverse();
+          }
+          return sortedArray;
+        },
+        sortOrderButtonText() {
+          return this.sortOrder === "asc" ? "Sort Countries's Name Descending ⇣⇣" : "Sort Countries's Name Ascending ⇡⇡ ";
+        }
   },
    created(){
      this.getListCountry();
@@ -146,12 +183,10 @@ export default {
 		}, 1000)
    },
    methods: {
-    sortBy1(prop){
-       this.ListCountry.sort((a,b) => a[prop] < b[prop] ? -1 : 1)
-     },
-     sortBy2(prop){
-       this.ListCountry.sort((a,b) => a[prop] > b[prop] ? -1 : 1)
-     },
+        toggleSortOrder() {
+          this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
+       
+        },
      async getListCountry() {
        try {
            this.loader = true;
@@ -165,10 +200,12 @@ export default {
        }
      },
      DetailMore(country) {
-      // console.log(country)
+        // console.log(country)
         this.itemDetail = country
         this.img_Detail = this.itemDetail.flags.png
         this.name = this.itemDetail.name.official
+
+       
      }
    },
    
@@ -187,7 +224,7 @@ export default {
 
 .box-card {
   width: 100%;
-  height: 500px;
+  height:420px;
   background-color:#FFFEFE;
   box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
   border-radius: 15px;
@@ -231,9 +268,11 @@ export default {
   right: 10px;
 }
 
-.box-btn {
+.img-detail {
   width: 100%;
-  height: 40px;
+  height: 200px;
 }
+
+
 
 </style>
